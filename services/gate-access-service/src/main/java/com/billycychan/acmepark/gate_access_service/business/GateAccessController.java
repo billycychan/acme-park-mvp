@@ -18,10 +18,12 @@ public class GateAccessController {
 
     @PostMapping("/access")
     public void checkAccess(@RequestParam String transponderId,
+                            @RequestParam String parkingLot,
                             @RequestParam String gate,
                             @RequestParam String licencePlate) {
         AccessRequest request  = new AccessRequest();
         request.setTransponderId(transponderId);
+        request.setParkingLot(parkingLot);
         request.setGate(gate);
         request.setLicencePlate(licencePlate);
         gateAccessService.validateAccess(request);

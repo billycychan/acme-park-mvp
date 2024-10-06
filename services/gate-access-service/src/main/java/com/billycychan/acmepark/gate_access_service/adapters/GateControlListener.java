@@ -12,27 +12,15 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class GateControlListener implements GateControlPort {
+public class GateControlListener {
 
-    private static final String GATE_OPEN = "gate_open";
-    private static final String GATE_CLOSE = "gate_close";
+    private final GateControlPort gateControl;
 
-    @Override
-    public void loadingGate(String gateId) {
-        String message = String.format("I am a GateControlPanel. I am validating the access at %s !!! :-)", gateId);
-        log.info(message);
-    }
+    private static final String OPEN_GATE = "open_gate";
+    private static final String CLOSE_GATE = "close_gate";
 
-    @Override
-    public void openGate(String gateId) {
-        String message = String.format("I am a GateControlPanel. I am opening the gate %s !!! :-)", gateId);
-        log.info(message);
-    }
-
-    @Override
-    public void closeGate(String gateId) {
-        String message = String.format("I am a GateControlPanel. I am closing the gate %s !!! :-)", gateId);
-        log.info(message);
+    public GateControlListener(GateControlPort gateControl) {
+        this.gateControl = gateControl;
     }
 
     @RabbitListener(bindings = @QueueBinding(
@@ -43,16 +31,18 @@ public class GateControlListener implements GateControlPort {
     public void listen(String data) {
         log.debug("Receiving request {}", data);
         GateRequest request = translate(data);
-        String gateId = request.getGate();
+        String gate = request.getGate();
+        String parkingLot = request.getParkingLot();
+
         switch (request.getAction().toLowerCase()) {
-            case GATE_OPEN:
-                openGate(gateId);
+            case OPEN_GATE:
+                gateControl.openGate(parkingLot, gate);
                 break;
-            case GATE_CLOSE:
-                closeGate(gateId);
+            case CLOSE_GATE:
+                gateControl.closeGate(parkingLot, gate);
                 break;
             default:
-                log.error("UNEXPECTED GateRequest Received");
+                log.error("UNEXPECTED GateRequest Received {}", request);
         }
     }
 

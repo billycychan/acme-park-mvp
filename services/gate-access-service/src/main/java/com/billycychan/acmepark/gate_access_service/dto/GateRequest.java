@@ -1,6 +1,11 @@
 package com.billycychan.acmepark.gate_access_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
+/**
+ * {"action":"GATE_OPEN","parking_lot":"A","gate":"NORTH_ENTRY"}
+ */
 
 @Data
 public class GateRequest {
@@ -12,7 +17,8 @@ public class GateRequest {
     /**
      * A B C D E
      */
-    private Character parkingLot;
+    @JsonProperty("parking_lot")
+    private String parkingLot;
 
     /**
      *  NORTH_ENTRY NORTH_EXIT

@@ -7,5 +7,6 @@ import lombok.NoArgsConstructor;
 public class AccessRequest {
     private String transponderId;
     private String licencePlate;
+    private String parkingLot;
     private String gate;
 }
