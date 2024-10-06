@@ -13,11 +13,6 @@ public class GateControl implements GateControlPort {
 
     @Override
     public void openGate(String parkingLot, String gate) {
-        log.info("I am a GateControl, I am now opening for the lot {} ,gate {}", parkingLot, gate);
-    }
-
-    @Override
-    public void closeGate(String parkingLot, String gate) {
-        log.info("I am a GateControl, I am now closing for the lot {}, gate {}", parkingLot, gate);
+        log.info("I am a Physical GateControl, I am now opening for the lot {} ,gate {}", parkingLot, gate);
     }
 }

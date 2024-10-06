@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class GateRequest {
     /**
-     * OPEN_GATE, CLOSE_GATE
+     * OPEN_GATE
      */
     private String action;
 
