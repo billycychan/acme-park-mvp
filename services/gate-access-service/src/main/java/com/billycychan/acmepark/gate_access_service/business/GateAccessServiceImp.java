@@ -1,44 +1,31 @@
 package com.billycychan.acmepark.gate_access_service.business;
 
 import com.billycychan.acmepark.gate_access_service.dto.AccessRequest;
-import com.billycychan.acmepark.gate_access_service.dto.AccessResult;
-import com.billycychan.acmepark.gate_access_service.dto.AccessStatus;
 import com.billycychan.acmepark.gate_access_service.ports.AccessLogPort;
-import com.billycychan.acmepark.gate_access_service.ports.AccessValidationPort;
+import com.billycychan.acmepark.gate_access_service.ports.AccessRequestSender;
 import com.billycychan.acmepark.gate_access_service.ports.GateControlPort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class GateAccessServiceImp implements IGateAccessService {
 
-    private final AccessValidationPort accessValidationPort;
     private final GateControlPort gateControlPort;
     private final AccessLogPort accessLogPort;
+    private final AccessRequestSender accessRequestSender;
 
-    public GateAccessServiceImp(AccessValidationPort accessValidationPort,
-                                GateControlPort gateControlPort,
-                                AccessLogPort accessLogPort) {
-        this.accessValidationPort = accessValidationPort;
+    public GateAccessServiceImp(GateControlPort gateControlPort,
+                                AccessLogPort accessLogPort,
+                                AccessRequestSender accessRequestSender) {
         this.gateControlPort = gateControlPort;
         this.accessLogPort = accessLogPort;
+        this.accessRequestSender = accessRequestSender;
     }
 
     @Override
     public void validateAccess(AccessRequest accessRequest) {
-        AccessResult accessResult = accessValidationPort.validateAccess(accessRequest);
-        if (accessResult.getAccessStatus().equals(AccessStatus.ACCESS_GRANTED)) {
-            validateSuccess(accessResult);
-        } else {
-            validateFailure(accessResult);
-        }
-    }
-
-    private void validateSuccess(AccessResult accessResult) {
-        gateControlPort.openGate();
-        accessLogPort.write(accessResult);
-    }
-
-    private void validateFailure(AccessResult accessResult) {
-        accessLogPort.write(accessResult);
+        accessRequestSender.send(accessRequest);
+        accessLogPort.write(accessRequest);
     }
 }

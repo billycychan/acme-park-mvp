@@ -1,25 +1,28 @@
 package com.billycychan.acmepark.gate_access_service.business;
 
 import com.billycychan.acmepark.gate_access_service.dto.AccessRequest;
-import com.billycychan.acmepark.gate_access_service.dto.AccessResult;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/gate")
 public class GateAccessController {
-    private final GateAccessServiceImp gateAccessService;
+    private final IGateAccessService gateAccessService;
 
-    public GateAccessController(GateAccessServiceImp gateAccessService) {
+    @Autowired
+    public GateAccessController(IGateAccessService gateAccessService) {
         this.gateAccessService = gateAccessService;
     }
 
     @PostMapping("/access")
     public void checkAccess(@RequestParam String transponderId,
-                            @RequestParam String gateId,
+                            @RequestParam String gate,
                             @RequestParam String licencePlate) {
         AccessRequest request  = new AccessRequest();
         request.setTransponderId(transponderId);
-        request.setGateId(gateId);
+        request.setGate(gate);
         request.setLicencePlate(licencePlate);
         gateAccessService.validateAccess(request);
     }
