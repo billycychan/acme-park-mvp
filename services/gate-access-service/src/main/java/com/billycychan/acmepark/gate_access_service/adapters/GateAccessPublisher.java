@@ -17,10 +17,10 @@ public class GateAccessPublisher implements AccessEventPublisher {
 
     @Override
     public void publish(TransponderAccessRequest request) {
+        log.info("GateAccessPublisher publish to request.queue result, {}", request);
         rabbitTemplate.convertAndSend(
                 "parking.exchange",
                 "permit.validated.request",
                 request);
-        log.info("Publsihed: {}", request);
     }
 }

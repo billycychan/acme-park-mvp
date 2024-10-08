@@ -24,9 +24,9 @@ public class GateAccessRESTController {
     }
 
     @PostMapping(path = "/validate")
-    public ResponseEntity<AccessResult> createTransponderRequest(@RequestBody TransponderAccessRequest request) {
-        log.info("Receiving request from POST /gate/validate {}", request);
-        AccessResult result = gateAccessPort.validateTransponderAccess(request);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> createTransponderRequest(@RequestBody TransponderAccessRequest request) {
+        log.info("GateAccessRESTController: POST {}", request);
+        gateAccessPort.vadlidateAccess(request);
+        return ResponseEntity.ok().build();
     }
 }
