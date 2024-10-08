@@ -16,7 +16,7 @@ public class AMQPSender implements ResponseSender  {
     }
 
     @Override
-    public void publishAccessResult(AccessResult result) {
+    public void send(AccessResult result) {
         rabbitTemplate.convertSendAndReceive(
                 "parking.exchange",
                 "permit.validated.response",

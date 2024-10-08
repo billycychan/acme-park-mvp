@@ -1,4 +1,6 @@
-package com.billycychan.acmepark.permit_service.dto;
+package com.billycychan.acmepark.permit_service.config;
+
+import com.billycychan.acmepark.permit_service.dto.Permit;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

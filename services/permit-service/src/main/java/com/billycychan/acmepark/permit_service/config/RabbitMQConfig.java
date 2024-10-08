@@ -28,14 +28,14 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding permitValidatedBinding1(Queue requestQueue, TopicExchange parkingExchange) {
+    public Binding requestQueueBinding(Queue requestQueue, TopicExchange parkingExchange) {
         return BindingBuilder.bind(requestQueue)
                 .to(parkingExchange)
                 .with("permit.validated.request");
     }
 
     @Bean
-    public Binding permitValidatedBinding2(Queue responseQueue, TopicExchange parkingExchange) {
+    public Binding responseQueueBinding(Queue responseQueue, TopicExchange parkingExchange) {
         return BindingBuilder.bind(responseQueue)
                 .to(parkingExchange)
                 .with("permit.validated.response");

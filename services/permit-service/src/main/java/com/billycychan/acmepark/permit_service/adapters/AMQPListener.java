@@ -20,7 +20,7 @@ public class AMQPListener {
         this.receiver = receiver;
     }
 
-    @RabbitListener(queues = "permit.validated.request.queue", concurrency = "4")
+    @RabbitListener(queues = "permit.validated.request.queue", concurrency = "2")
     public void receiveTransponderAccessRequest(TransponderAccessRequest request) {
         receiver.receive(request);
     }

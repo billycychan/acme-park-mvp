@@ -1,8 +1,7 @@
-package com.billycychan.acmepark.gate_access_service.business;
+package com.billycychan.acmepark.gate_access_service.adapters;
 
-import com.billycychan.acmepark.gate_access_service.dto.AccessResult;
 import com.billycychan.acmepark.gate_access_service.dto.TransponderAccessRequest;
-import com.billycychan.acmepark.gate_access_service.ports.incoming.GateAccessPort;
+import com.billycychan.acmepark.gate_access_service.ports.inbound.RequestReceiver;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,23 +9,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-
 @Slf4j
 @RequestMapping("/gate")
 @RestController
 public class GateAccessRESTController {
 
-    private final GateAccessPort gateAccessPort;
+    private final RequestReceiver requestReceiver;
 
-    public GateAccessRESTController(GateAccessPort gateAccessPort) {
-        this.gateAccessPort = gateAccessPort;
+    public GateAccessRESTController(RequestReceiver requestReceiver) {
+        this.requestReceiver = requestReceiver;
     }
 
     @PostMapping(path = "/validate")
     public ResponseEntity<?> createTransponderRequest(@RequestBody TransponderAccessRequest request) {
-        log.info("GateAccessRESTController: POST {}", request);
-        gateAccessPort.vadlidateAccess(request);
+        requestReceiver.receive(request);
         return ResponseEntity.ok().build();
     }
 }

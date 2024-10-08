@@ -8,7 +8,6 @@ import com.billycychan.acmepark.permit_service.ports.inbound.RequestValidator;
 import com.billycychan.acmepark.permit_service.ports.outbound.PermitRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
@@ -22,12 +21,13 @@ public class PermitValidationService implements RequestValidator {
     }
 
     public AccessResult validateTransponderRequest(TransponderAccessRequest request) {
-        log.info("Validating for the transponderId, {}", request.getTransponderId());
         AccessResult result = new AccessResult();
         PermitValidatedEvent event = permitRepository.findByTransponderId(request.getTransponderId())
                 .map(permit -> isExpired(permit) ? PermitValidatedEvent.EXPIRED : PermitValidatedEvent.VALIDATED)
                 .orElse(PermitValidatedEvent.NOT_REGISTERED);
         result.setTransponderId(request.getTransponderId());
+        result.setGate(request.getGate());
+        result.setLot(request.getLot());
         result.setEvent(event);
         result.setMessage(event.getAssociatedMessage());
         return result;
