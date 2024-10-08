@@ -1,0 +1,29 @@
+include:
+  # Loading the technical infrastructure
+  - ./../infrastructure/docker-compose.yml
+
+services:
+
+  gate-access-service:
+    container_name: gate-access-service
+    build:
+      context: ../services/gate-access-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+
+  permit-service:
+    container_name: permit-service
+    build:
+      context: ../services/permit-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy

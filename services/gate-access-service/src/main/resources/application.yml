@@ -1,0 +1,9 @@
+spring:
+    application:
+        name: gate-access-service
+    rabbitmq:
+        username: admin
+        password: cas735
+
+server:
+    port: 8081
