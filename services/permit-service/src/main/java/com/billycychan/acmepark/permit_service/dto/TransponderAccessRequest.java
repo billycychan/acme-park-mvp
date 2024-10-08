@@ -3,7 +3,6 @@ package com.billycychan.acmepark.permit_service.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
 

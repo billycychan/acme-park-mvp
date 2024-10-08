@@ -4,7 +4,6 @@ import com.billycychan.acmepark.permit_service.dto.AccessResult;
 import com.billycychan.acmepark.permit_service.dto.TransponderAccessRequest;
 import com.billycychan.acmepark.permit_service.ports.inbound.RequestReceiver;
 import com.billycychan.acmepark.permit_service.ports.inbound.RequestValidator;
-import com.billycychan.acmepark.permit_service.ports.outbound.PermitRepository;
 import com.billycychan.acmepark.permit_service.ports.outbound.ResponseSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

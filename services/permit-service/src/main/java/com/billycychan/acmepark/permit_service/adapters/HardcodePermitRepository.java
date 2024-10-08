@@ -1,7 +1,7 @@
 package com.billycychan.acmepark.permit_service.adapters;
 
-import com.billycychan.acmepark.permit_service.dto.Permit;
 import com.billycychan.acmepark.permit_service.config.PermitGenerator;
+import com.billycychan.acmepark.permit_service.dto.Permit;
 import com.billycychan.acmepark.permit_service.ports.outbound.PermitRepository;
 import org.springframework.stereotype.Repository;
 

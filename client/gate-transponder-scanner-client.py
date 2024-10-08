@@ -1,7 +1,7 @@
-import requests
 import json
-import time
 import random
+import requests
+import time
 from datetime import datetime, timedelta
 
 # Constants for generating data

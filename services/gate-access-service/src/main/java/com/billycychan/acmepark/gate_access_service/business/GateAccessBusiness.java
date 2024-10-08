@@ -1,7 +1,6 @@
 package com.billycychan.acmepark.gate_access_service.business;
 
 import com.billycychan.acmepark.gate_access_service.dto.AccessResult;
-import com.billycychan.acmepark.gate_access_service.dto.PermitValidatedEvent;
 import com.billycychan.acmepark.gate_access_service.dto.TransponderAccessRequest;
 import com.billycychan.acmepark.gate_access_service.ports.inbound.RequestReceiver;
 import com.billycychan.acmepark.gate_access_service.ports.inbound.ResponseReceiver;
@@ -9,8 +8,6 @@ import com.billycychan.acmepark.gate_access_service.ports.outbound.GateManagemen
 import com.billycychan.acmepark.gate_access_service.ports.outbound.RequestSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Slf4j
 @Service
