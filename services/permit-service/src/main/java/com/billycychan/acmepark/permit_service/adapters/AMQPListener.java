@@ -3,11 +3,13 @@ package com.billycychan.acmepark.permit_service.adapters;
 import com.billycychan.acmepark.permit_service.dto.AccessResult;
 import com.billycychan.acmepark.permit_service.dto.TransponderAccessRequest;
 import com.billycychan.acmepark.permit_service.ports.inbound.RequestReceiver;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class AMQPListener {
 
@@ -18,7 +20,7 @@ public class AMQPListener {
         this.receiver = receiver;
     }
 
-    @RabbitListener(queues = "permit.validated.request.queue")
+    @RabbitListener(queues = "permit.validated.request.queue", concurrency = "4")
     public void receiveTransponderAccessRequest(TransponderAccessRequest request) {
         receiver.receive(request);
     }

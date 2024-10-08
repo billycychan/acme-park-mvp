@@ -22,7 +22,6 @@ public class Translator implements RequestReceiver {
 
     @Override
     public void receive(TransponderAccessRequest accessRequest) {
-        log.info("receive TransponderAccessRequest: {}", accessRequest);
         AccessResult result = requestValidator.validateTransponderRequest(accessRequest);
         responseSender.publishAccessResult(result);
     }
