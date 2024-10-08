@@ -1,12 +1,21 @@
 package com.billycychan.acmepark.permit_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data @NoArgsConstructor
+import java.util.Date;
+
+@Data
 public class TransponderAccessRequest {
-    private String transponderId;
-    private String licencePlate;
-    private String parkingLot;
-    private String gate;
+    @JsonProperty("transponder-id")
+    String transponderId;
+    @JsonProperty("gate")
+    String gate;
+    @JsonProperty("lot")
+    String lot;
+    @JsonProperty("datetime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    Date datetime;
 }

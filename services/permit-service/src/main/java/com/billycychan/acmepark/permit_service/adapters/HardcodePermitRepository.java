@@ -2,7 +2,7 @@ package com.billycychan.acmepark.permit_service.adapters;
 
 import com.billycychan.acmepark.permit_service.dto.Permit;
 import com.billycychan.acmepark.permit_service.dto.PermitGenerator;
-import com.billycychan.acmepark.permit_service.ports.PermitRepository;
+import com.billycychan.acmepark.permit_service.ports.outbound.PermitRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -16,9 +16,7 @@ public class HardcodePermitRepository implements PermitRepository {
 
     // Constructor
     public HardcodePermitRepository() {
-        // Initialize the permits list
         this.permits = new ArrayList<>();
-        // Add all generated permits
         this.permits.addAll(PermitGenerator.generatePermits());
     }
 
