@@ -16,7 +16,7 @@ public class GateListener  {
         this.responseReceiver = responseReceiver;
     }
 
-    @RabbitListener(queues = "permit.validated.response.queue", concurrency = "2")
+    @RabbitListener(queues = "permit.validated.response.queue", concurrency = "4")
     public void handlePermitValidated(AccessResult result) {
         responseReceiver.receive(result);
     }

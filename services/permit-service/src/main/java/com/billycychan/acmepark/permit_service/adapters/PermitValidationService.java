@@ -23,7 +23,7 @@ public class PermitValidationService implements RequestValidator {
     public AccessResult validateTransponderRequest(TransponderAccessRequest request) {
         AccessResult result = new AccessResult();
         PermitValidatedEvent event = permitRepository.findByTransponderId(request.getTransponderId())
-                .map(permit -> isExpired(permit) ? PermitValidatedEvent.EXPIRED : PermitValidatedEvent.VALIDATED)
+                .map(permit -> isExpired(permit, request) ? PermitValidatedEvent.EXPIRED : PermitValidatedEvent.VALIDATED)
                 .orElse(PermitValidatedEvent.NOT_REGISTERED);
         result.setTransponderId(request.getTransponderId());
         result.setGate(request.getGate());
@@ -33,8 +33,9 @@ public class PermitValidationService implements RequestValidator {
         return result;
     }
 
-    private boolean isExpired(Permit permit) {
+    private boolean isExpired(Permit permit, TransponderAccessRequest request) {
         // Check if the permit has already expired (expiry date is before now)
-        return permit.getExpiryDate().isBefore(LocalDateTime.now());
+        // Request datetime is before the expiry date.
+        return request.getDatetime().after(permit.getExpiryDate());
     }
 }
