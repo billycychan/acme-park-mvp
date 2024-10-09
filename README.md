@@ -57,3 +57,245 @@ deployment $ docker compose up -d
 ```
 deployment $ docker compose down
 ```
+
+## Overall Flowchart
+
+### Gate Access Service
+```mermaid
+flowchart LR
+
+    REST_IN([fa:fa-circle-right POST Request fa:fa-envelope \n transponderId, gate, lot ])
+
+    AMQP_IN([fa:fa-circle-right AMQP fa:fa-envelope\n permit.validated.response.queue])
+    AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validated.request.queue])
+
+
+    subgraph "<< gate-access-service >>"
+        REQUEST_IN("<< InputPort >>\n RequestReceiver")
+        RESPONSE_IN("<< InputPort >>\n AccessResult")
+        SERVICE{{"\nGateAccess\nService\n<br>"}}
+        HRM_SENDER("<< OutputPort >>\n RequestSender")
+    end
+
+    REST_IN -- TransponderAccessRequest--> REQUEST_IN
+    AMQP_IN -- AccessResult --> RESPONSE_IN
+    REQUEST_IN -. offered .- SERVICE
+    RESPONSE_IN -. offered .- SERVICE
+
+
+SERVICE -. required .- HRM_SENDER
+HRM_SENDER -- TransponderAccessRequest --> AMQP_OUT
+```
+### Permit Service
+```mermaid
+flowchart LR
+
+    AMQP_IN([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validated.request.queue])
+    AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validated.response.queue])
+
+
+    subgraph "<< permit-service >>"
+        RESPONSE_IN("<< InputPort >>\n RequestReceiver")
+        SERVICE{{"\nPermit\nService\n<br>"}}
+        RESPONSE_OUT("<< OutputPort >>\n ResponseSender")
+    end
+
+    AMQP_IN -- TransponderAccessRequest --> RESPONSE_IN
+    RESPONSE_IN -. offered .- SERVICE
+
+
+SERVICE -. required .- RESPONSE_OUT
+RESPONSE_OUT -- TransponderAccessRequest --> AMQP_OUT
+
+```
+
+## Architecture Deep Dive
+### Gate Access Service
+```mermaid
+classDiagram
+  namespace InboundPorts {
+    class RequestReceiver {
+      <<Interface>>
+      + receive(TransponderAccessRequest request)
+    }
+
+    class ResponseReceiver {
+      <<Interface>>
+      + receive(ResponderReceiver)
+    }
+  }
+
+  namespace InboundAdapters {
+    class GateListener {
+      + handlePermitValidated(AccessResult result)
+    }
+
+    class GateAccessRESTController {
+      + createTransponderRequest(@RequestBody TransponderAccessRequest request): ResponseEntity<?>
+    }
+  }
+
+  namespace OutboundPorts {
+    class RequestSender {
+      <<Interface>>
+      + send(TransponderAccessRequest request);
+    }
+
+    class GateManagement {
+      <<Interface>>
+      + handle(AccessResult result);
+    }
+
+  }
+
+  namespace OutboundAdapters {
+    class GatePublisher {
+      + send(TransponderAccessRequest request)
+    }
+
+    class GateManager {
+      - openGate(String transponderId, String lot, String gate)
+      - showError(String transponderId, String lot, String gate, String message)
+    }
+  }
+
+  namespace Business {
+    class GateAccessBusiness {
+
+    }
+  }
+
+  class AccessResult {
+    <<DTO>>
+    + transponderId: String
+    + gate: String
+    + lot: Int
+    + event: PermitValidatedEvent
+    + message: String
+  }
+
+  class PermitValidatedEvent {
+    <<DTO>>
+    VALIDATED
+    EXPIRED
+    NOT_REGISTERED
+    TIMEOUT
+  }
+
+  class TransponderAccessRequest {
+    <<DTO>>
+    + transponderId: String
+    + gate: String
+    + lot: String
+    + datetime: timestamp
+  }
+
+  GateListener --> ResponseReceiver
+  GateManagement <|.. GateManager
+  RequestSender <|.. GatePublisher
+  RequestReceiver  <|.. GateAccessBusiness
+  ResponseReceiver  <|.. GateAccessBusiness
+  GateAccessBusiness --> RequestSender
+  GateAccessBusiness --> GateManagement
+
+```
+### Permit Service
+
+```mermaid
+classDiagram
+    namespace InboundPorts {
+        class RequestReceiver {
+            <<Interface>>
+            + receive(TransponderAccessRequest request)
+        }
+
+        class RequestValidator {
+            <<Interface>>
+            + validateTransponderRequest(TransponderAccessRequest request): AccessResult
+        }
+    }
+
+    namespace InboundAdapters {
+        class PermitValidationService {
+            + permitRepository: PermitRepository
+            - isExpired(Permit permit, TransponderAccessRequest request): boolean
+        }
+
+        class AMQPListener {
+            + requestReceiver: RequestReceiver
+            + receiveTransponderAccessRequest(TransponderAccessRequest request)
+        }
+    }
+
+    namespace OutboundPorts {
+        class PermitRepository {
+            <<Interface>>
+            + findByTransponderId(String transponderId): Optional<Permit>
+        }
+
+        class ResponseSender {
+            <<Interface>>
+            + send(AccessResult result);
+        }
+    }
+
+    namespace OutboundAdapters {
+        class HardcodePermitRepository {
+            + List<Permit> permits
+        }
+
+        class AMQPSender {
+        }
+    }
+
+    namespace Business {
+        class Translator {
+            responseSender: ResponseSender
+            requestValidator: RequestValidator
+        }
+    }
+
+    class AccessResult {
+        <<DTO>>
+        + transponderId: String
+        + gate: String
+        + lot: Int
+        + event: PermitValidatedEvent
+        + message: String
+    }
+
+    class Permit {
+        <<DTO>>
+        + permitId: String
+        + transponderId: String
+        + memberId: String
+        + licensePlates: List<String>
+        + expiryDate: timestamp
+    }
+
+    class PermitValidatedEvent {
+        <<DTO>>
+        VALIDATED
+        EXPIRED
+        NOT_REGISTERED
+        TIMEOUT
+    }
+
+    class TransponderAccessRequest {
+        <<DTO>>
+        + transponderId: String
+        + gate: String
+        + lot: String
+        + datetime: timestamp
+    }
+
+    AMQPListener --> RequestReceiver
+    ResponseSender <|-- AMQPSender
+    PermitRepository <|-- HardcodePermitRepository
+    PermitValidationService --> PermitRepository
+    PermitValidationService <|-- RequestValidator
+    RequestReceiver <|-- Translator
+    Translator --> ResponseSender
+    Translator --> RequestValidator
+
+```
