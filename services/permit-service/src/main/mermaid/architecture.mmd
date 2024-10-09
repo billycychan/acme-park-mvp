@@ -1,0 +1,95 @@
+classDiagram
+    namespace InboundPorts {
+        class RequestReceiver {
+            <<Interface>>
+            + receive(TransponderAccessRequest request)
+        }
+
+        class RequestValidator {
+            <<Interface>>
+            + validateTransponderRequest(TransponderAccessRequest request): AccessResult
+        }
+    }
+
+    namespace InboundAdapters {
+        class PermitValidationService {
+            + permitRepository: PermitRepository
+            - isExpired(Permit permit, TransponderAccessRequest request): boolean
+        }
+
+        class AMQPListener {
+            + requestReceiver: RequestReceiver
+            + receiveTransponderAccessRequest(TransponderAccessRequest request)
+        }
+    }
+
+    namespace OutboundPorts {
+        class PermitRepository {
+            <<Interface>>
+            + findByTransponderId(String transponderId): Optional<Permit>
+        }
+
+        class ResponseSender {
+            <<Interface>>
+            + send(AccessResult result);
+        }
+    }
+
+    namespace OutboundAdapters {
+        class HardcodePermitRepository {
+            + List<Permit> permits
+        }
+
+        class AMQPSender {
+        }
+    }
+
+    namespace Business {
+        class Translator {
+            responseSender: ResponseSender
+            requestValidator: RequestValidator
+        }
+    }
+
+    class AccessResult {
+        <<DTO>>
+        + transponderId: String
+        + gate: String
+        + lot: Int
+        + event: PermitValidatedEvent
+        + message: String
+    }
+
+    class Permit {
+        <<DTO>>
+        + permitId: String
+        + transponderId: String
+        + memberId: String
+        + licensePlates: List<String>
+        + expiryDate: timestamp
+    }
+
+    class PermitValidatedEvent {
+        <<DTO>>
+        VALIDATED
+        EXPIRED
+        NOT_REGISTERED
+        TIMEOUT
+    }
+
+    class TransponderAccessRequest {
+        <<DTO>>
+        + transponderId: String
+        + gate: String
+        + lot: String
+        + datetime: timestamp
+    }
+
+    AMQPListener --> RequestReceiver
+    ResponseSender <|-- AMQPSender
+    PermitRepository <|-- HardcodePermitRepository
+    PermitValidationService --> PermitRepository
+    PermitValidationService <|-- RequestValidator
+    RequestReceiver <|-- Translator
+    Translator --> ResponseSender
+    Translator --> RequestValidator
