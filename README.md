@@ -8,13 +8,18 @@ This repository is the MVP for *Case Study: The ACME Park! product* demonstratin
 
 members present their transponder at the gate, and the gate is opened if they have a valid permit.
 
+## Prerequisite
+- Java 21+
+- python 3.10
+- Docker
+
 ## Overall Description
 
 - `infrastructure`: contains the _technical_ services used to support the ACME PARK! MVP
     - `message-broker`: A RabbitMQ server to support event-driven architectures using MQTT and AMQP protocols.
       - AMQP was used in this project
-    - `service-registry`: An Eureka server (Netflix) to support service discovery
       - Message Queue was used for inter-service communication
+    - `service-registry`: An Eureka server (Netflix) to support service discovery
 - `services`: The business services used to support ACME PARK! MVP
     - `gate-service`: service to receive transponder access request sent by client and forward them to permit service for validation
     - `permit-service` service to receive validation request sent by `gate-service` and give back the result to gate-service
@@ -57,6 +62,17 @@ deployment $ docker compose up -d
 ```
 deployment $ docker compose down
 ```
+
+### Client
+This script sends sequential POST requests to a gate validation API with 
+- randomized transponder IDs
+- timestamps (before or after a set expiration date)
+- alternating gates (ENTRY_1 or ENTRY_2).
+- It generates random timestamps and constructs the payload, simulating vehicle entries at parking lot gates, sending requests every two seconds.
+```bash
+ client $ python ./gate-transponder-scanner-client.py
+```
+
 
 ## Overall Flowchart
 
