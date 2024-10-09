@@ -1,4 +1,4 @@
-package com.billycychan.acmepark.gate_access_service.adapters;
+package com.billycychan.acmepark.gate_access_service.business;
 
 import com.billycychan.acmepark.gate_access_service.dto.AccessResult;
 import com.billycychan.acmepark.gate_access_service.ports.inbound.ResponseReceiver;

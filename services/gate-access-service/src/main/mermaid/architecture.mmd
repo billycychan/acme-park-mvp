@@ -1,0 +1,85 @@
+classDiagram
+    namespace InboundPorts {
+        class RequestReceiver {
+            <<Interface>>
+            + receive(TransponderAccessRequest request)
+        }
+
+        class ResponseReceiver {
+            <<Interface>>
+            + receive(ResponderReceiver)
+        }
+    }
+
+    namespace InboundAdapters {
+        class GateListener {
+            + handlePermitValidated(AccessResult result)
+        }
+
+        class GateAccessRESTController {
+           + createTransponderRequest(@RequestBody TransponderAccessRequest request): ResponseEntity<?>
+        }
+    }
+
+    namespace OutboundPorts {
+        class RequestSender {
+            <<Interface>>
+            + send(TransponderAccessRequest request);
+        }
+
+        class GateManagement {
+            <<Interface>>
+            + handle(AccessResult result);
+        }
+
+    }
+
+    namespace OutboundAdapters {
+        class GatePublisher {
+            + send(TransponderAccessRequest request)
+        }
+
+        class GateManager {
+            - openGate(String transponderId, String lot, String gate)
+            - showError(String transponderId, String lot, String gate, String message)
+        }
+    }
+
+    namespace Business {
+        class GateAccessBusiness {
+
+        }
+    }
+
+    class AccessResult {
+        <<DTO>>
+        + transponderId: String
+        + gate: String
+        + lot: Int
+        + event: PermitValidatedEvent
+        + message: String
+    }
+
+    class PermitValidatedEvent {
+        <<DTO>>
+        VALIDATED
+        EXPIRED
+        NOT_REGISTERED
+        TIMEOUT
+    }
+
+    class TransponderAccessRequest {
+        <<DTO>>
+        + transponderId: String
+        + gate: String
+        + lot: String
+        + datetime: timestamp
+    }
+
+    GateListener --> ResponseReceiver
+    GateManagement <|.. GateManager
+    RequestSender <|.. GatePublisher
+    RequestReceiver  <|.. GateAccessBusiness
+    ResponseReceiver  <|.. GateAccessBusiness
+    GateAccessBusiness --> RequestSender
+    GateAccessBusiness --> GateManagement
