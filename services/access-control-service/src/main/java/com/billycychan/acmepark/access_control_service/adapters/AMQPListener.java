@@ -1,30 +1,41 @@
 package com.billycychan.acmepark.access_control_service.adapters;
 
-import com.billycychan.acmepark.access_control_service.dto.TransponderAccess;
+import com.billycychan.acmepark.access_control_service.adapters.action.ActionHandlerRegistry;
+import com.billycychan.acmepark.access_control_service.dto.Message;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.sql.Date;
-import java.sql.Timestamp;
 
 @Slf4j
 @Component
 public class AMQPListener {
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @RabbitListener(queues = "transponder.access.request.queue")
-    public void listen(String data) {
-        TransponderAccess access = translate(data);
-        access.setTimestamp(new Timestamp(System.currentTimeMillis()));
-        log.info(String.valueOf(access));
+    @Autowired
+    private final ActionHandlerRegistry registry;
+
+    public AMQPListener(ActionHandlerRegistry registry) {
+        this.registry = registry;
     }
 
-    private TransponderAccess translate(String raw) {
-        ObjectMapper mapper = new ObjectMapper();
+    @RabbitListener(queues = {"access.request.queue", "permit.validate.response.queue"})
+    public void listen(String data) {
+        var deserializedMessage = translate(data, new TypeReference<Message<JsonNode>>() {});
+        String action = deserializedMessage.getAction();
+        JsonNode payload = deserializedMessage.getPayload();
+        var handler = registry.getHandler(action);
+        handler.handle(action, payload);
+    }
+
+    // Generic translate method for Message<T>
+    private <T> Message<T> translate(String raw, TypeReference<Message<T>> typeReference) {
         try {
-            return mapper.readValue(raw, TransponderAccess.class);
-        } catch(Exception e) {
+            return objectMapper.readValue(raw, typeReference);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

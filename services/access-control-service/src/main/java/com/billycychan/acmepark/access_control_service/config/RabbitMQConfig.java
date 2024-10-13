@@ -2,9 +2,6 @@ package com.billycychan.acmepark.access_control_service.config;
 
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,8 +18,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue transponderAccessRequest() {
-        return new Queue("transponder.access.request.queue", true);
+    public Queue accessRequestQueue() {
+        return new Queue("access.request.queue", true);
+    }
+
+    @Bean
+    public Queue gateCommandQueue() {
+        return new Queue("gate.command.queue", true);
     }
 
     @Bean
@@ -31,8 +33,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public DirectExchange transponderAccess() {
-        return new DirectExchange("transponder.access");
+    public DirectExchange accessExchange() {
+        return new DirectExchange("access");
+    }
+
+    @Bean
+    public DirectExchange gateCommand() {
+        return new DirectExchange("gate.command");
     }
 
     @Bean
@@ -50,21 +57,16 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding transponderAccessRequestBinding(Queue transponderAccessRequest, DirectExchange transponderAccess) {
-        return BindingBuilder.bind(transponderAccessRequest)
-                .to(transponderAccess)
+    public Binding transponderAccessRequestBinding(Queue accessRequestQueue, DirectExchange accessExchange) {
+        return BindingBuilder.bind(accessRequestQueue)
+                .to(accessExchange)
                 .with("request");
     }
 
-//    @Bean
-//    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-//        final var rabbitTemplate = new RabbitTemplate(connectionFactory);
-//        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-//        return rabbitTemplate;
-//    }
-
-//    @Bean
-//    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-//        return new Jackson2JsonMessageConverter();
-//    }
+    @Bean
+    public Binding gateCommandBinding(Queue gateCommandQueue, DirectExchange gateCommand) {
+        return BindingBuilder.bind(gateCommandQueue)
+                .to(gateCommand)
+                .with("command");
+    }
 }
