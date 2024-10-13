@@ -7,7 +7,6 @@ import com.billycychan.acmepark.access_control_service.ports.inbound.AccessReque
 import com.billycychan.acmepark.access_control_service.ports.outbound.GateControl;
 import com.billycychan.acmepark.access_control_service.ports.outbound.PermitValidation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
