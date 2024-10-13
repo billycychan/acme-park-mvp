@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.billycychan.acmepark</groupId>
-    <artifactId>gate-access-service</artifactId>
+    <artifactId>access-control-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>gate-access-service</name>
+    <name>access-control-service</name>
     <description>Gate Access Service for ACME PARK SpringBoot</description>
     <url/>
     <licenses>

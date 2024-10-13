@@ -15,7 +15,7 @@
         <!-- Infrastructure services -->
         <module>infrastructure/service-registry</module>
         <!-- Business Services -->
-        <module>services/gate-access-service</module>
+        <module>services/access-control-service</module>
         <module>services/permit-service</module>
 
     </modules>

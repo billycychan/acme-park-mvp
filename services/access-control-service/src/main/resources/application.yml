@@ -1,6 +1,6 @@
 spring:
     application:
-        name: gate-access-service
+        name: access-control-service
     rabbitmq:
         username: admin
         password: cas735
