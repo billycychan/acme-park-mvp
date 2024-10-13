@@ -1,55 +1,70 @@
 package com.billycychan.acmepark.permit_service.config;
-
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
     @Bean
-    public Queue requestQueue() {
-        return new Queue("permit.validated.request.queue", true);
+    public Queue permitValidateRequest() {
+        return new Queue("permit.validate.request.queue", true);
     }
 
     @Bean
-    public Queue responseQueue() {
-        return new Queue("permit.validated.response.queue", true);
+    public Queue permitValidateResponse() {
+        return new Queue("permit.validate.response.queue", true);
     }
 
     @Bean
-    public TopicExchange parkingExchange() {
-        return new TopicExchange("parking.exchange");
+    public Queue accessRequestQueue() {
+        return new Queue("access.request.queue", true);
     }
 
     @Bean
-    public Binding requestQueueBinding(Queue requestQueue, TopicExchange parkingExchange) {
-        return BindingBuilder.bind(requestQueue)
-                .to(parkingExchange)
-                .with("permit.validated.request");
+    public Queue gateCommandQueue() {
+        return new Queue("gate.command.queue", true);
     }
 
     @Bean
-    public Binding responseQueueBinding(Queue responseQueue, TopicExchange parkingExchange) {
-        return BindingBuilder.bind(responseQueue)
-                .to(parkingExchange)
-                .with("permit.validated.response");
+    public TopicExchange permitValidate() {
+        return new TopicExchange("permit.validate");
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-        final var rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-        return rabbitTemplate;
+    public DirectExchange accessExchange() {
+        return new DirectExchange("access");
     }
 
     @Bean
-    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public DirectExchange gateCommand() {
+        return new DirectExchange("gate.command");
+    }
+
+    @Bean
+    public Binding permitValidateRequestBinding(Queue permitValidateRequest, TopicExchange permitValidate) {
+        return BindingBuilder.bind(permitValidateRequest)
+                .to(permitValidate)
+                .with("request");
+    }
+
+    @Bean
+    public Binding permitValidateResponseBinding(Queue permitValidateResponse, TopicExchange permitValidate) {
+        return BindingBuilder.bind(permitValidateResponse)
+                .to(permitValidate)
+                .with("response");
+    }
+
+    @Bean
+    public Binding transponderAccessRequestBinding(Queue accessRequestQueue, DirectExchange accessExchange) {
+        return BindingBuilder.bind(accessRequestQueue)
+                .to(accessExchange)
+                .with("request");
+    }
+
+    @Bean
+    public Binding gateCommandBinding(Queue gateCommandQueue, DirectExchange gateCommand) {
+        return BindingBuilder.bind(gateCommandQueue)
+                .to(gateCommand)
+                .with("command");
     }
 }

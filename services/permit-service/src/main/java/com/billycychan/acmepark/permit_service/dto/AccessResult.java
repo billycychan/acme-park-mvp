@@ -1,17 +1,14 @@
 package com.billycychan.acmepark.permit_service.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @NoArgsConstructor
+// {"action":"FINISH_TP_VALIDATION","payload":{"transponderId":"T_001","status":"VALID","lot":"A","gate":"E1"}}
 @Data
-public class AccessResult implements Serializable {
-        @JsonProperty("transponder-id") String transponderId;
-        @JsonProperty("gate") String gate;
-        @JsonProperty("lot") String lot;
-        @JsonProperty("event") PermitValidatedEvent event;
-        @JsonProperty("message") String message ;
+public class AccessResult {
+        String transponderId;
+        PermitStatus status;
+        String lot;
+        String gate;
 }

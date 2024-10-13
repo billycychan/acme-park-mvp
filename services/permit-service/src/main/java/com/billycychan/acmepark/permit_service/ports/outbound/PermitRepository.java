@@ -1,9 +1,8 @@
 package com.billycychan.acmepark.permit_service.ports.outbound;
 
-import com.billycychan.acmepark.permit_service.dto.Permit;
-
-import java.util.Optional;
+import com.billycychan.acmepark.permit_service.dto.AccessResult;
+import com.billycychan.acmepark.permit_service.dto.TransponderAccess;
 
 public interface PermitRepository {
-    Optional<Permit> findByTransponderId(String transponderId);
+    AccessResult validateTransponderRequest(TransponderAccess access);
 }

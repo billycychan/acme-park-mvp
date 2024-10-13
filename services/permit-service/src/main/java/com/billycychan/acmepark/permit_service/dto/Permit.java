@@ -2,7 +2,7 @@ package com.billycychan.acmepark.permit_service.dto;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -15,5 +15,5 @@ public class Permit {
     private final String memberId;
     // e.g. ABCD123, AAAA392...
     private final List<String> licensePlates;
-    private final Date expiryDate;
+    private final Timestamp expiryDate;
 }

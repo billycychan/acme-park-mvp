@@ -2,15 +2,12 @@ package com.billycychan.acmepark.permit_service.config;
 
 import com.billycychan.acmepark.permit_service.dto.Permit;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class PermitGenerator {
-    private static final Date EXPIRY_DATE = Date.from(LocalDateTime.of(2025, 12, 31, 23, 59)
-            .atZone(ZoneId.systemDefault()).toInstant());
+    private static final Timestamp EXPIRY_DATE = Timestamp.valueOf("2025-12-31 23:59:59.0");
 
     public static List<Permit> generatePermits() {
         return Arrays.asList(
