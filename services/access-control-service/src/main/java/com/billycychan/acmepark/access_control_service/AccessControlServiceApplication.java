@@ -1,13 +1,13 @@
-package com.billycychan.acmepark.gate_access_service;
+package com.billycychan.acmepark.access_control_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GateAccessServiceApplication {
+public class AccessControlServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GateAccessServiceApplication.class, args);
+		SpringApplication.run(AccessControlServiceApplication.class, args);
 	}
 
 }
