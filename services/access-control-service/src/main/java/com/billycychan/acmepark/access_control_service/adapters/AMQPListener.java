@@ -24,6 +24,7 @@ public class AMQPListener {
 
     @RabbitListener(queues = {"access.request.queue", "permit.validate.response.queue"})
     public void listen(String data) {
+        log.info("Received data,{}, ", data);
         var deserializedMessage = translate(data, new TypeReference<Message<JsonNode>>() {});
         String action = deserializedMessage.getAction();
         JsonNode payload = deserializedMessage.getPayload();

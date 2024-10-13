@@ -24,8 +24,8 @@ public class AMQPSender implements ValidateResponseSender {
         message.setAction(Actions.FINISH_TP_VALIDATION);
         message.setPayload(result);
         rabbitTemplate.convertSendAndReceive(
-                "parking.exchange",
-                "permit.validate.response",
+                "permit.validate",
+                "response",
                 translate(message)
         );
     }
