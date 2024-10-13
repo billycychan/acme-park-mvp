@@ -28,7 +28,9 @@ public class AMQPListener {
         String action = deserializedMessage.getAction();
         JsonNode payload = deserializedMessage.getPayload();
         var handler = registry.getHandler(action);
-        handler.handle(action, payload);
+        if (handler != null) {
+            handler.handle(action, payload);
+        }
     }
 
     // Generic translate method for Message<T>
