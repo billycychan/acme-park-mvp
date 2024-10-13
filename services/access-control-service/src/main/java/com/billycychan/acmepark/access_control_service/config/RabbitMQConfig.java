@@ -21,7 +21,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue accessRequestTransponder() {
+    public Queue transponderAccessRequest() {
         return new Queue("transponder.access.request.queue", true);
     }
 
@@ -31,40 +31,40 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public TopicExchange transponderAccess() {
-        return new TopicExchange("transponder.access");
+    public DirectExchange transponderAccess() {
+        return new DirectExchange("transponder.access");
     }
 
     @Bean
-    public Binding permitValidateRequest(Queue permitValidateRequest, TopicExchange permitValidate) {
+    public Binding permitValidateRequestBinding(Queue permitValidateRequest, TopicExchange permitValidate) {
         return BindingBuilder.bind(permitValidateRequest)
                 .to(permitValidate)
                 .with("request");
     }
 
     @Bean
-    public Binding permitValidateResponse(Queue responseQueue, TopicExchange permitValidate) {
-        return BindingBuilder.bind(responseQueue)
+    public Binding permitValidateResponseBinding(Queue permitValidateResponse, TopicExchange permitValidate) {
+        return BindingBuilder.bind(permitValidateResponse)
                 .to(permitValidate)
                 .with("response");
     }
 
     @Bean
-    public Binding transponderAccessRequest(Queue responseQueue, DirectExchange transponderAccess) {
-        return BindingBuilder.bind(responseQueue)
+    public Binding transponderAccessRequestBinding(Queue transponderAccessRequest, DirectExchange transponderAccess) {
+        return BindingBuilder.bind(transponderAccessRequest)
                 .to(transponderAccess)
                 .with("request");
     }
 
-    @Bean
-    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-        final var rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-        return rabbitTemplate;
-    }
+//    @Bean
+//    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
+//        final var rabbitTemplate = new RabbitTemplate(connectionFactory);
+//        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
+//        return rabbitTemplate;
+//    }
 
-    @Bean
-    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
+//    @Bean
+//    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
+//        return new Jackson2JsonMessageConverter();
+//    }
 }
