@@ -1,0 +1,27 @@
+
+flowchart LR
+
+AMQP_IN([fa:fa-envelope AMQP fa:fa-circle-right\n access.request.queue])
+AMQP_IN_2([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validate.response.queue])
+AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n gate.command])
+AMQP_OUT_2([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validate.request.queue])
+
+
+subgraph "<< service >>"
+RESPONSE_IN("<< InputPort >>\n AccessRequestHandling")
+SERVICE{{"Access Control\n Service<br>"}}
+RESPONSE_OUT("<< OutputPort >>\n GateControl")
+RESPONSE_OUT_2("<< OutputPort >>\n PermitValidation")
+
+end
+
+AMQP_IN -- TransponderAccess --> RESPONSE_IN
+AMQP_IN_2 -- AccessResult --> RESPONSE_IN
+RESPONSE_IN -. offered .- SERVICE
+
+
+
+SERVICE -. required .- RESPONSE_OUT
+SERVICE -. required .- RESPONSE_OUT_2
+RESPONSE_OUT -- imply. by --> AMQP_OUT
+RESPONSE_OUT_2 --  TransponderAccess --> AMQP_OUT_2

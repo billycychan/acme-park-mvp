@@ -21,7 +21,7 @@ members present their transponder at the gate, and the gate is opened if they ha
       - Message Queue was used for inter-service communication
     - `service-registry`: An Eureka server (Netflix) to support service discovery
 - `services`: The business services used to support ACME PARK! MVP
-    - `gate-service`: service to receive transponder access request sent by client and forward them to permit service for validation
+    - `access-control-service`: service to receive transponder access request sent by client and forward them to permit service for validation
     - `permit-service` service to receive validation request sent by `gate-service` and give back the result to gate-service
 - `clients`: External (non-service-based artefacts) consuming the ACME PARK! services
     - `gate-transponder-scanner-client`: a simulator pretending transponder scanned event sending data to the  `gate-service`
@@ -31,17 +31,21 @@ members present their transponder at the gate, and the gate is opened if they ha
 
 - Infrastructure:
     - RabbitMQ Management web interface: <http://localhost:8080> (login: `admin`, password: `cas735`)
-    - Eureka registry: <http://locahost:8761>
+    - Eureka registry: <http://locahost:8761>, there are no usecases for MVP. Services are communicated in message queues.
 - Business Services:
-    - Gate Service <http://locahost:8081>
+    - Access Control Service <http://locahost:8081>
     - Permit Service <http://localhost:8082>
 
 ## How to operate?
 
+The Maven wrapper is used to make sure that the Maven build has all the required components to run the project. 
+You can access it`./mvnw --help`
+
+
 ### Compiling the micro-services
 
 ```
-acme-park-mvp $ mvn clean package
+acme-park-mvp $ ./mvnw clean package
 ```
 
 ### Building the turn-key services
@@ -64,13 +68,15 @@ deployment $ docker compose down
 ```
 
 ### Client
-This script sends sequential POST requests to a gate validation API with 
-- randomized transponder IDs
-- timestamps (before or after a set expiration date)
-- alternating gates (ENTRY_1 or ENTRY_2).
-- It generates random timestamps and constructs the payload, simulating vehicle entries at parking lot gates, sending requests every two seconds.
+- The client side is simulating two gates scanning the transponders(`T_001`. `T_002`).
+- This script connects to RabbitMQ and simulates two gates (E1, E2) processing transponder IDs. 
+- It sends access requests, validates a transponder, and listens for commands to open or not open gates. 
+- The `T_001` is valid while `T_002` is expired.
+- 
 ```bash
- client $ python ./gate-transponder-scanner-client.py
+  client $ pipenv shell
+  client $ pipenv install
+  client $ python ./gate-client-simulation.py
 ```
 
 
@@ -80,238 +86,54 @@ This script sends sequential POST requests to a gate validation API with
 ```mermaid
 flowchart LR
 
-    REST_IN([fa:fa-circle-right POST Request fa:fa-envelope \n transponderId, gate, lot ])
-
-    AMQP_IN([fa:fa-circle-right AMQP fa:fa-envelope\n permit.validated.response.queue])
-    AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validated.request.queue])
-
-
-    subgraph "<< gate-access-service >>"
-        REQUEST_IN("<< InputPort >>\n RequestReceiver")
-        RESPONSE_IN("<< InputPort >>\n AccessResult")
-        SERVICE{{"\nGateAccess\nService\n<br>"}}
-        HRM_SENDER("<< OutputPort >>\n RequestSender")
-    end
-
-    REST_IN -- TransponderAccessRequest--> REQUEST_IN
-    AMQP_IN -- AccessResult --> RESPONSE_IN
-    REQUEST_IN -. offered .- SERVICE
-    RESPONSE_IN -. offered .- SERVICE
+  AMQP_IN([fa:fa-envelope AMQP fa:fa-circle-right\n access.request.queue])
+  AMQP_IN_2([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validate.response.queue])
+  AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n gate.command])
+  AMQP_OUT_2([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validate.request.queue])
 
 
-SERVICE -. required .- HRM_SENDER
-HRM_SENDER -- TransponderAccessRequest --> AMQP_OUT
+  subgraph "<< service >>"
+    RESPONSE_IN("<< InputPort >>\n AccessRequestHandling")
+    SERVICE{{"Access Control\n Service<br>"}}
+    RESPONSE_OUT("<< OutputPort >>\n GateControl")
+    RESPONSE_OUT_2("<< OutputPort >>\n PermitValidation")
+
+  end
+
+  AMQP_IN -- TransponderAccess --> RESPONSE_IN
+  AMQP_IN_2 -- AccessResult --> RESPONSE_IN
+  RESPONSE_IN -. offered .- SERVICE
+
+
+
+SERVICE -. required .- RESPONSE_OUT
+SERVICE -. required .- RESPONSE_OUT_2
+RESPONSE_OUT -- imply. by --> AMQP_OUT
+RESPONSE_OUT_2 --  TransponderAccess --> AMQP_OUT_2
 ```
 ### Permit Service
 ```mermaid
 flowchart LR
 
-    AMQP_IN([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validated.request.queue])
-    AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validated.response.queue])
+  AMQP_IN([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validate.request.queue])
+  AMQP_OUT([fa:fa-envelope AMQP fa:fa-circle-right\n permit.validate.response.queue])
 
 
-    subgraph "<< permit-service >>"
-        RESPONSE_IN("<< InputPort >>\n RequestReceiver")
-        SERVICE{{"\nPermit\nService\n<br>"}}
-        RESPONSE_OUT("<< OutputPort >>\n ResponseSender")
-    end
+  subgraph "<< service >>"
+    RESPONSE_IN("<< InputPort >>\n PermitValidate\nHandling")
+    SERVICE{{"Permit\n Service<br>"}}
+    RESPONSE_OUT("<< OutputPort >>\n PermitRepository")
+    RESPONSE_OUT_2("<< OutputPort >>\n ValidateResponseSender")
 
-    AMQP_IN -- TransponderAccessRequest --> RESPONSE_IN
-    RESPONSE_IN -. offered .- SERVICE
+  end
+
+  AMQP_IN -- TransponderAccess --> RESPONSE_IN
+  RESPONSE_IN -. offered .- SERVICE
+
 
 
 SERVICE -. required .- RESPONSE_OUT
-RESPONSE_OUT -- TransponderAccessRequest --> AMQP_OUT
-
-```
-
-## Architecture Deep Dive
-### Gate Access Service
-```mermaid
-classDiagram
-  namespace InboundPorts {
-    class RequestReceiver {
-      <<Interface>>
-      + receive(TransponderAccessRequest request)
-    }
-
-    class ResponseReceiver {
-      <<Interface>>
-      + receive(ResponderReceiver)
-    }
-  }
-
-  namespace InboundAdapters {
-    class GateListener {
-      + handlePermitValidated(AccessResult result)
-    }
-
-    class GateAccessRESTController {
-      + createTransponderRequest(@RequestBody TransponderAccessRequest request): ResponseEntity<?>
-    }
-  }
-
-  namespace OutboundPorts {
-    class RequestSender {
-      <<Interface>>
-      + send(TransponderAccessRequest request);
-    }
-
-    class GateManagement {
-      <<Interface>>
-      + handle(AccessResult result);
-    }
-
-  }
-
-  namespace OutboundAdapters {
-    class GatePublisher {
-      + send(TransponderAccessRequest request)
-    }
-
-    class GateManager {
-      - openGate(String transponderId, String lot, String gate)
-      - showError(String transponderId, String lot, String gate, String message)
-    }
-  }
-
-  namespace Business {
-    class GateAccessBusiness {
-
-    }
-  }
-
-  class AccessResult {
-    <<DTO>>
-    + transponderId: String
-    + gate: String
-    + lot: Int
-    + event: PermitValidatedEvent
-    + message: String
-  }
-
-  class PermitValidatedEvent {
-    <<DTO>>
-    VALIDATED
-    EXPIRED
-    NOT_REGISTERED
-    TIMEOUT
-  }
-
-  class TransponderAccessRequest {
-    <<DTO>>
-    + transponderId: String
-    + gate: String
-    + lot: String
-    + datetime: timestamp
-  }
-
-  GateListener --> ResponseReceiver
-  GateManagement <|.. GateManager
-  RequestSender <|.. GatePublisher
-  RequestReceiver  <|.. GateAccessBusiness
-  ResponseReceiver  <|.. GateAccessBusiness
-  GateAccessBusiness --> RequestSender
-  GateAccessBusiness --> GateManagement
-
-```
-### Permit Service
-
-```mermaid
-classDiagram
-    namespace InboundPorts {
-        class RequestReceiver {
-            <<Interface>>
-            + receive(TransponderAccessRequest request)
-        }
-
-        class RequestValidator {
-            <<Interface>>
-            + validateTransponderRequest(TransponderAccessRequest request): AccessResult
-        }
-    }
-
-    namespace InboundAdapters {
-        class PermitValidationService {
-            + permitRepository: PermitRepository
-            - isExpired(Permit permit, TransponderAccessRequest request): boolean
-        }
-
-        class AMQPListener {
-            + requestReceiver: RequestReceiver
-            + receiveTransponderAccessRequest(TransponderAccessRequest request)
-        }
-    }
-
-    namespace OutboundPorts {
-        class PermitRepository {
-            <<Interface>>
-            + findByTransponderId(String transponderId): Optional<Permit>
-        }
-
-        class ResponseSender {
-            <<Interface>>
-            + send(AccessResult result);
-        }
-    }
-
-    namespace OutboundAdapters {
-        class HardcodePermitRepository {
-            + List<Permit> permits
-        }
-
-        class AMQPSender {
-        }
-    }
-
-    namespace Business {
-        class Translator {
-            responseSender: ResponseSender
-            requestValidator: RequestValidator
-        }
-    }
-
-    class AccessResult {
-        <<DTO>>
-        + transponderId: String
-        + gate: String
-        + lot: Int
-        + event: PermitValidatedEvent
-        + message: String
-    }
-
-    class Permit {
-        <<DTO>>
-        + permitId: String
-        + transponderId: String
-        + memberId: String
-        + licensePlates: List<String>
-        + expiryDate: timestamp
-    }
-
-    class PermitValidatedEvent {
-        <<DTO>>
-        VALIDATED
-        EXPIRED
-        NOT_REGISTERED
-        TIMEOUT
-    }
-
-    class TransponderAccessRequest {
-        <<DTO>>
-        + transponderId: String
-        + gate: String
-        + lot: String
-        + datetime: timestamp
-    }
-
-    AMQPListener --> RequestReceiver
-    ResponseSender <|-- AMQPSender
-    PermitRepository <|-- HardcodePermitRepository
-    PermitValidationService --> PermitRepository
-    PermitValidationService <|-- RequestValidator
-    RequestReceiver <|-- Translator
-    Translator --> ResponseSender
-    Translator --> RequestValidator
-
+SERVICE -. required .- RESPONSE_OUT_2
+RESPONSE_OUT -- findPermits --> PermitDB
+RESPONSE_OUT_2 --  AccessResult --> AMQP_OUT
 ```
