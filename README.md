@@ -72,12 +72,14 @@ deployment $ docker compose down
 - This script connects to RabbitMQ and simulates two gates (E1, E2) processing transponder IDs. 
 - It sends access requests, validates a transponder, and listens for commands to open or not open gates. 
 - The `T_001` is valid while `T_002` is expired.
-- 
+
 ```bash
   client $ pipenv shell
   client $ pipenv install
   client $ python ./gate-client-simulation.py
 ```
+#### The result
+![client_usecase.gif](assets/client_usecase.gif)
 
 
 ## Overall Flowchart
