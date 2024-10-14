@@ -67,7 +67,6 @@ def simulate_requests():
         send_message(transponderId, gate, lot, timestamp)
         time.sleep(2)
 
-
 def callback(ch, method, properties, body):
         """
         Handle the deserialized message
@@ -92,7 +91,7 @@ def callback(ch, method, properties, body):
 
 if __name__ == "__main__":
     print("This is simulating two gates(E1 E2) reading transponders ")
-    print("T_001 is VALID, but T_022 is expired")
+    print("The expected result is that T_001 is VALID, but T_022 is expired")
     channel.basic_consume(queue='gate.command.queue', on_message_callback=callback, auto_ack=True)
     simulate_requests()
     channel.start_consuming()
