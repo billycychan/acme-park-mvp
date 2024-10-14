@@ -22,7 +22,7 @@ public class AMQPListener {
         this.registry = registry;
     }
 
-    @RabbitListener(queues = {"access.request.queue", "permit.validate.response.queue"})
+    @RabbitListener(queues = {"access.request.queue", "permit.validate.response.queue"}, concurrency = "4")
     public void listen(String data) {
         log.info("Received data,{}, ", data);
         var deserializedMessage = translate(data, new TypeReference<Message<JsonNode>>() {});
