@@ -4,10 +4,10 @@ include:
 
 services:
 
-  gate-access-service:
-    container_name: gate-access-service
+  access-control-service:
+    container_name: access-control-service
     build:
-      context: ../services/gate-access-service
+      context: ../services/access-control-service
     ports:
       - "8081:8081"
     depends_on:
