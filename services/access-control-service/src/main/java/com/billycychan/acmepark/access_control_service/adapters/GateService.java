@@ -1,6 +1,5 @@
 package com.billycychan.acmepark.access_control_service.adapters;
 
-import com.billycychan.acmepark.access_control_service.adapters.action.Actions;
 import com.billycychan.acmepark.access_control_service.dto.Message;
 import com.billycychan.acmepark.access_control_service.ports.outbound.GateControl;
 import com.fasterxml.jackson.databind.JsonNode;

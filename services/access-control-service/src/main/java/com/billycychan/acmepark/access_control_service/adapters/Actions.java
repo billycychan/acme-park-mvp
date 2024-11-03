@@ -1,4 +1,4 @@
-package com.billycychan.acmepark.access_control_service.adapters.action;
+package com.billycychan.acmepark.access_control_service.adapters;
 
 public interface Actions {
     public final String REQUEST_TP_VALIDATION = "REQUEST_TP_VALIDATION";
